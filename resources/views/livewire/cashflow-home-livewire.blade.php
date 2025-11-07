@@ -690,24 +690,23 @@
                 let initialTotalIncome = @json($totalIncome);
                 let initialTotalExpense = @json($totalExpense);
 
+                const noInitialData = initialTotalIncome === 0 && initialTotalExpense === 0;
+
                 const pieOptions = {
-                    // Jika kedua nilai 0, chart tidak akan render. Beri nilai dummy.
-                    // Ini tidak akan terlihat oleh pengguna tetapi memastikan chart muncul.
-                    series: (initialTotalIncome === 0 && initialTotalExpense === 0) 
+                    series: noInitialData
                             ? [100] 
                             : [initialTotalIncome, initialTotalExpense],
                     chart: {
                         type: 'donut',
                         height: '100%',
                     },
-                    labels: (initialTotalIncome === 0 && initialTotalExpense === 0)
+                    labels: noInitialData
                             ? ['Tidak ada data']
                             : ['Pemasukan', 'Pengeluaran'],
                     colors: ['#11998e', '#ee0979'],
                     legend: {
                         position: 'bottom',
-                        // Sembunyikan legenda jika tidak ada data
-                        show: !(initialTotalIncome === 0 && initialTotalExpense === 0)
+                        show: !noInitialData
                     },
                     plotOptions: {
                         pie: {
@@ -715,14 +714,17 @@
                                 size: '65%',
                                 labels: {
                                     show: true,
-                                    total: {
+                                    total: noInitialData ? { show: false } : {
                                         show: true,
                                         label: 'Total Transaksi',
                                         fontSize: '16px',
                                         fontWeight: 600,
                                         color: '#373d3f',
                                         formatter: function (w) {
-                                            const total = w.globals.initialSeries.reduce((a, b) => a + b, 0);
+                                            // Pastikan w.globals.initialSeries ada sebelum di-reduce
+                                            const series = w.globals.initialSeries || w.globals.series;
+                                            if (!series || series.length === 0) return 'Rp 0';
+                                            const total = series.reduce((a, b) => a + b, 0);
                                             if (total === 0) {
                                                 return 'Rp 0';
                                             }
@@ -759,12 +761,12 @@
                         const noData = income === 0 && expense === 0;
                         const newSeries = noData ? [100] : [income, expense];
                         const newLabels = noData ? ['Tidak ada data'] : ['Pemasukan', 'Pengeluaran'];
-
+                        
                         window.cashflowPieChart.updateOptions({
                             series: newSeries,
                             labels: newLabels,
                             legend: {
-                                show: !noData
+                                show: !noData,
                             }
                         });
                     }
