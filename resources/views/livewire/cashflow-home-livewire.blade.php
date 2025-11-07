@@ -266,9 +266,8 @@
 
                         <div class="mb-3">
                             <label for="description" class="form-label fw-semibold">Deskripsi</label>
-                            {{-- Solusi: Tambahkan wire:ignore agar Livewire tidak me-render ulang Trix --}}
                             <div wire:ignore>
-                                <input id="description" type="hidden" name="description" value="{{ $description }}">
+                                <input id="description" type="hidden" name="description" wire:model.defer="description">
                                 <trix-editor 
                                     input="description"
                                     class="form-control trix-content"

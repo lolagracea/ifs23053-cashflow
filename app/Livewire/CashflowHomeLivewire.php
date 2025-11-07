@@ -293,6 +293,8 @@ class CashflowHomeLivewire extends Component
         $this->currentReceipt = null;
 
         $this->dispatch('reset-trix');
+
+        $this->dispatch('reset-trix');
     }
 
     private function isDirty()
