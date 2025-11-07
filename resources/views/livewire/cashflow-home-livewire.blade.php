@@ -286,13 +286,15 @@
             </div>
 
             {{-- Search and Add Button --}}
-            <div class="mb-4 d-flex flex-column flex-md-row gap-3">
-                <div class="input-group flex-grow-1 shadow-sm" style="max-width: 400px;">
+            <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                {{-- Search Input --}}
+                <div class="input-group shadow-sm" style="max-width: 400px; flex: 1 1 300px;">
                     <span class="input-group-text bg-light border-end-0">
                         <i class="bi bi-search text-muted"></i>
                     </span>
                     <input type="text" class="form-control border-start-0 ps-0" placeholder="Cari transaksi..." wire:model.live="search">
                 </div>
+                {{-- Add Button --}}
                 <button class="btn btn-primary fw-semibold px-4 shadow-sm" wire:click="openModal" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; white-space: nowrap;">
                     <i class="bi bi-plus-circle me-2"></i>Tambah Transaksi
                 </button>
