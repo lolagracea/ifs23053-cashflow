@@ -263,7 +263,7 @@
 
     {{-- Chart Card --}}
     <div class="row mb-4">
-        <div class="col-lg-8">
+        <div class="col-lg-8 col-md-12 mb-4 mb-lg-0">
             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -278,7 +278,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-4 col-md-12">
             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                 <div class="card-body p-4 d-flex flex-column">
                     <h5 class="card-title fw-bold mb-3">
@@ -701,9 +701,31 @@
                     legend: {
                         position: 'bottom'
                     },
-                    dataLabels: {
-                        enabled: false // Menonaktifkan label pada irisan donut
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '65%',
+                                labels: {
+                                    show: true,
+                                    total: {
+                                        show: true,
+                                        label: 'Total Transaksi',
+                                        fontSize: '16px',
+                                        fontWeight: 600,
+                                        color: '#373d3f',
+                                        formatter: function (w) {
+                                            const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                            if (total === 0) {
+                                                return 'Rp 0';
+                                            }
+                                            return 'Rp ' + total.toLocaleString('id-ID');
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
+                    dataLabels: { enabled: false },
                     responsive: [{
                         breakpoint: 480,
                         options: {
