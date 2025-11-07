@@ -501,10 +501,19 @@
                 // Support Livewire-style events (array/object) as well as browser CustomEvent from dispatchBrowserEvent
                 Livewire.on('set-trix-content', (event) => {
                     const content = (event && (event.content || (event[0] && event[0].content))) || '';
-                    if (trixEditor && trixEditor.editor) {
-                        trixEditor.editor.loadHTML(content);
-                    }
+                    // Ensure Trix editor is fully initialized before loading content
+                    const ensureTrixReadyAndLoad = () => {
+                        if (trixEditor && trixEditor.editor) {
+                            trixEditor.editor.loadHTML(content);
+                        } else {
+                            // Retry after a short delay if editor is not ready
+                            setTimeout(ensureTrixReadyAndLoad, 50);
+                        }
+                    };
+                    ensureTrixReadyAndLoad();
                 });
+
+                // The `reset-trix` listener already exists and should be fine.
 
                 // Emit changes from Trix back to Livewire
                 trixEditor.addEventListener('trix-change', (e) => {
