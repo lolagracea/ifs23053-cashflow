@@ -263,7 +263,7 @@
 
     {{-- Chart Card --}}
     <div class="row mb-4">
-        <div class="col-lg-8 col-md-12 mb-4 mb-lg-0">
+        <div class="col-lg-7 col-md-7 mb-4 mb-md-0">
             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -278,7 +278,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 col-md-12">
+        <div class="col-lg-5 col-md-5">
             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                 <div class="card-body p-4 d-flex flex-column">
                     <h5 class="card-title fw-bold mb-3">
@@ -691,7 +691,11 @@
                 let initialTotalExpense = @json($totalExpense);
 
                 const pieOptions = {
-                    series: [initialTotalIncome, initialTotalExpense],
+                    // Jika kedua nilai 0, chart tidak akan render. Beri nilai dummy kecil.
+                    // Ini tidak akan terlihat oleh pengguna tetapi memastikan chart muncul.
+                    series: (initialTotalIncome === 0 && initialTotalExpense === 0) 
+                            ? [1] 
+                            : [initialTotalIncome, initialTotalExpense],
                     chart: {
                         type: 'donut',
                         height: '100%',
@@ -699,7 +703,9 @@
                     labels: ['Pemasukan', 'Pengeluaran'],
                     colors: ['#11998e', '#ee0979'],
                     legend: {
-                        position: 'bottom'
+                        position: 'bottom',
+                        // Sembunyikan legenda jika tidak ada data
+                        show: !(initialTotalIncome === 0 && initialTotalExpense === 0)
                     },
                     plotOptions: {
                         pie: {
@@ -748,7 +754,13 @@
                     const expense = payload.expense || 0;
 
                     if (window.cashflowPieChart) {
-                        window.cashflowPieChart.updateSeries([income, expense]);
+                        const newSeries = (income === 0 && expense === 0) ? [1] : [income, expense];
+                        window.cashflowPieChart.updateOptions({
+                            series: newSeries,
+                            legend: {
+                                show: !(income === 0 && expense === 0)
+                            }
+                        });
                     }
                 });
             }
