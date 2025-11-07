@@ -340,14 +340,8 @@
             let initialIncome = @json($chartData['income'] ?? []);
             let initialExpense = @json($chartData['expense'] ?? []);
 
-            // Generate demo data if no data exists
-            if (!initialIncome.length && !initialExpense.length) {
-                const demoData = generateDemoData();
-                initialIncome = demoData.income;
-                initialExpense = demoData.expense;
-            }
 
-            // 2. Sebelum render chart baru, hancurkan yang lama
+            //  Sebelum render chart baru, hancurkan yang lama
             if (window.cashflowChart) {
                 window.cashflowChart.destroy();
                 window.cashflowChart = null;
