@@ -288,20 +288,20 @@
             {{-- Search and Add Button --}}
             <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                 {{-- Search Input --}}
-                <div class="input-group shadow-sm" style="max-width: 400px; flex: 1 1 300px;">
+                <div class="input-group shadow-sm" style="max-width: 500px; flex: 1 1 300px;">
                     <span class="input-group-text bg-light border-end-0">
                         <i class="bi bi-search text-muted"></i>
                     </span>
                     <input type="text" class="form-control border-start-0 ps-0" placeholder="Cari transaksi..." wire:model.live="search">
                 </div>
                 {{-- Add Button --}}
-                <button class="btn btn-primary fw-semibold px-4 shadow-sm" wire:click="openModal" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; white-space: nowrap;">
+                <button class="btn btn-primary btn-lg fw-semibold px-4 shadow-sm" wire:click="openModal" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; white-space: nowrap;">
                     <i class="bi bi-plus-circle me-2"></i>Tambah Transaksi
                 </button>
             </div>
 
             {{-- Filter Buttons --}}
-            <div class="mb-4 d-flex justify-content-center">
+            <div class="mb-4 d-flex justify-content-start">
                 <div class="btn-group shadow-sm" role="group" aria-label="Filter Transaksi" style="border-radius: 10px; overflow: hidden;">
                     <button type="button" class="btn {{ $filterType == 'all' ? 'btn-primary' : 'btn-outline-primary' }} fw-semibold px-4 py-2" wire:click="$set('filterType', 'all')" style="{{ $filterType == 'all' ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;' : '' }}">
                         <i class="bi bi-list-ul me-2"></i>Semua
