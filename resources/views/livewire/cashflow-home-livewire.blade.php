@@ -377,69 +377,66 @@
             }
 
             const options = {
-                series: [
-                    { name: 'Pemasukan', data: initialIncome },
-                    { name: 'Pengeluaran', data: initialExpense }
-                ],
+                series: [{
+                    name: 'Pemasukan',
+                    data: initialIncome
+                }, {
+                    name: 'Pengeluaran',
+                    data: initialExpense
+                }],
                 chart: {
                     height: 350,
-                    type: 'area',
-                    foreColor: "#999",
-                    stacked: true,
-                    dropShadow: {
-                        enabled: true,
-                        enabledSeries: [0],
-                        top: -2,
-                        left: 2,
-                        blur: 5,
-                        opacity: 0.06
+                    type: 'line',
+                    zoom: {
+                        enabled: false
                     },
-                    toolbar: { show: true }
+                    toolbar: { show: true },
+                    foreColor: "#999"
                 },
-                colors: ['#00E396', '#0090FF'],
+                colors: ['#11998e', '#ee0979'], // Warna disesuaikan dengan kartu statistik
                 stroke: {
-                    curve: 'smooth',
-                    width: 3
+                    width: [4, 4], // Lebar garis untuk Pemasukan dan Pengeluaran
+                    curve: 'straight',
+                    dashArray: [0, 5] // 0 untuk garis solid (Pemasukan), 5 untuk garis putus-putus (Pengeluaran)
                 },
                 dataLabels: {
                     enabled: false
                 },
                 markers: {
                     size: 0,
-                    strokeColor: "#fff",
-                    strokeWidth: 3,
-                    strokeOpacity: 1,
-                    fillOpacity: 1,
-                    hover: { size: 6 }
+                    hover: {
+                        sizeOffset: 6
+                    }
                 },
                 xaxis: {
                     type: 'datetime',
                     axisBorder: { show: false },
                     axisTicks: { show: false }
                 },
-                yaxis: {
-                    min: 0,
-                    forceNiceScale: true,
-                    labels: {
-                        formatter: function(value) {
-                            return "Rp " + value.toLocaleString('id-ID');
-                        },
-                        offsetX: -10
-                    }
-                },
                 grid: {
-                    padding: { left: 5, right: 5 }
+                    borderColor: '#f1f1f1',
                 },
                 tooltip: {
-                    x: { format: 'dd MMM yyyy' }
+                    x: { format: 'dd MMM yyyy' },
+                    y: {
+                        formatter: function(val) {
+                            return "Rp " + val.toLocaleString('id-ID');
+                        },
+                    }
                 },
                 legend: {
                     position: 'top',
-                    horizontalAlign: 'left'
-                },
-                fill: {
-                    type: 'solid',
-                    fillOpacity: 0.7
+                    horizontalAlign: 'left',
+                    markers: {
+                        width: 12,
+                        height: 12,
+                        strokeWidth: 0,
+                        radius: 12,
+                    },
+                    itemMargin: {
+                        horizontal: 10,
+                        vertical: 0
+                    },
                 }
             };
 
