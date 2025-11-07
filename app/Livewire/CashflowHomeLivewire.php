@@ -18,6 +18,7 @@ class CashflowHomeLivewire extends Component
     public $search = '';
     public $filterType = 'all'; // Properti baru untuk filter: 'all', 'income', 'expense'
     public $showModal = false;
+    public $showDetailModal = false;
 
     // form fields
     public $title;
@@ -27,6 +28,7 @@ class CashflowHomeLivewire extends Component
     public $receipt;
     public $editingId = null;
     public $currentReceipt = null;
+    public $selectedCashflow = null;
     public $chartData;
 
     protected $listeners = ['confirmDelete', 'delete-confirmed' => 'deleteCashflow', 'saveAndClose', 'discardAndClose', 'trixUpdated' => 'onTrixUpdated']; 
@@ -116,6 +118,23 @@ class CashflowHomeLivewire extends Component
 
         $this->showModal = false;
         $this->resetForm();
+    }
+
+    public function showDetail($id)
+    {
+        $cashflow = Cashflow::find($id);
+        if (!$cashflow || $cashflow->user_id != $this->auth->id) {
+            $this->dispatch('swal:toast', ['icon' => 'error', 'title' => 'Data tidak ditemukan.']);
+            return;
+        }
+        $this->selectedCashflow = $cashflow;
+        $this->showDetailModal = true;
+    }
+
+    public function closeDetailModal()
+    {
+        $this->showDetailModal = false;
+        $this->selectedCashflow = null;
     }
 
     public function save()

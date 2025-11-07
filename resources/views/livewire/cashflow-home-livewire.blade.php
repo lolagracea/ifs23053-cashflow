@@ -210,6 +210,10 @@
                                         <i class="bi bi-trash3-fill"></i>
                                         <span>Hapus</span>
                                     </button>
+                                    <button class="btn btn-sm btn-outline-info d-flex align-items-center gap-1" wire:click="showDetail({{ $item->id }})">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>Detail</span>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -309,6 +313,59 @@
         </div>
     </div>
     <div class="modal-backdrop fade show" style="display: @if($showModal) block @else none @endif;"></div>
+
+    {{-- Modal Detail --}}
+    <div class="modal @if($showDetailModal) show @endif" 
+         style="display: @if($showDetailModal) block @else none @endif;"
+         tabindex="-1"
+         role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-file-text-fill me-2"></i>
+                        Detail Transaksi
+                    </h5>
+                    <button type="button" class="btn-close" wire:click="closeDetailModal"></button>
+                </div>
+                <div class="modal-body px-4 py-4">
+                    @if ($selectedCashflow)
+                        <div class="mb-4">
+                            <h3 class="fw-bold mb-1">{{ $selectedCashflow->title }}</h3>
+                            <p class="text-muted mb-2"><i class="bi bi-calendar3 me-2"></i>{{ $selectedCashflow->created_at->format('d M Y, H:i') }}</p>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <p class="mb-1 text-muted small">Jenis Transaksi</p>
+                                @if($selectedCashflow->type == 'income')
+                                    <span class="badge fs-6 rounded-pill" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 6px 12px;">
+                                        <i class="bi bi-arrow-up-circle me-1"></i>Pemasukan
+                                    </span>
+                                @else
+                                    <span class="badge fs-6 rounded-pill" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%); padding: 6px 12px;">
+                                        <i class="bi bi-arrow-down-circle me-1"></i>Pengeluaran
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Nominal</p>
+                                <h4 class="fw-bold">Rp {{ number_format($selectedCashflow->amount, 0, ',', '.') }}</h4>
+                            </div>
+                        </div>
+
+                        @if ($selectedCashflow->description)
+                            <div class="mb-4">
+                                <p class="mb-2 fw-semibold">Deskripsi</p>
+                                <div class="p-3 bg-light rounded trix-content">{!! $selectedCashflow->description !!}</div>
+                            </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show" style="display: @if($showDetailModal) block @else none @endif;"></div>
 
     {{-- Scripts --}}
     @push('scripts')
