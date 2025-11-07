@@ -210,6 +210,10 @@
                                         <i class="bi bi-trash3-fill"></i>
                                         <span>Hapus</span>
                                     </button>
+                                    <button class="btn btn-sm btn-outline-info d-flex align-items-center gap-1" wire:click="showDetail({{ $item->id }})">
+                                        <i class="bi bi-eye-fill"></i>
+                                        <span>Detail</span>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -266,9 +270,8 @@
 
                         <div class="mb-3">
                             <label for="description" class="form-label fw-semibold">Deskripsi</label>
-                            {{-- Solusi: Tambahkan wire:ignore agar Livewire tidak me-render ulang Trix --}}
                             <div wire:ignore>
-                                <input id="description" type="hidden" name="description" value="{{ $description }}">
+                                <input id="description" type="hidden" name="description" wire:model.defer="description">
                                 <trix-editor 
                                     input="description"
                                     class="form-control trix-content"
@@ -311,6 +314,9 @@
     </div>
     <div class="modal-backdrop fade show" style="display: @if($showModal) block @else none @endif;"></div>
 
+    {{-- Modal Detail --}}
+    @include('components.modals.todos.detail')
+
     {{-- Scripts --}}
     @push('scripts')
     <script>
@@ -340,14 +346,8 @@
             let initialIncome = @json($chartData['income'] ?? []);
             let initialExpense = @json($chartData['expense'] ?? []);
 
-            // Generate demo data if no data exists
-            if (!initialIncome.length && !initialExpense.length) {
-                const demoData = generateDemoData();
-                initialIncome = demoData.income;
-                initialExpense = demoData.expense;
-            }
 
-            // 2. Sebelum render chart baru, hancurkan yang lama
+            //  Sebelum render chart baru, hancurkan yang lama
             if (window.cashflowChart) {
                 window.cashflowChart.destroy();
                 window.cashflowChart = null;
@@ -508,10 +508,19 @@
                 // Support Livewire-style events (array/object) as well as browser CustomEvent from dispatchBrowserEvent
                 Livewire.on('set-trix-content', (event) => {
                     const content = (event && (event.content || (event[0] && event[0].content))) || '';
-                    if (trixEditor && trixEditor.editor) {
-                        trixEditor.editor.loadHTML(content);
-                    }
+                    // Ensure Trix editor is fully initialized before loading content
+                    const ensureTrixReadyAndLoad = () => {
+                        if (trixEditor && trixEditor.editor) {
+                            trixEditor.editor.loadHTML(content);
+                        } else {
+                            // Retry after a short delay if editor is not ready
+                            setTimeout(ensureTrixReadyAndLoad, 50);
+                        }
+                    };
+                    ensureTrixReadyAndLoad();
                 });
+
+                // The `reset-trix` listener already exists and should be fine.
 
                 // Emit changes from Trix back to Livewire
                 trixEditor.addEventListener('trix-change', (e) => {
