@@ -322,7 +322,7 @@
                         <tr>
                             <th class="fw-semibold py-3 text-center" style="width: 60px;">No</th>
                             <th class="fw-semibold py-3">Judul</th>
-                            <th class="fw-semibold py-3" style="width: 150px;">Jenis</th>
+                            <th class="fw-semibold py-3 text-center" style="width: 150px;">Jenis</th>
                             <th class="fw-semibold py-3" style="width: 180px;">Nominal</th>
                             <th class="fw-semibold py-3 text-center" style="width: 280px;">Aksi</th>
                         </tr>
@@ -349,7 +349,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @if($item->type == 'income')
                                     <span class="badge rounded-pill" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 8px 14px; font-size: 12px;">
                                         <i class="bi bi-arrow-up-circle me-1"></i>Pemasukan
