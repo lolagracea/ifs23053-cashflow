@@ -262,31 +262,17 @@
     </div>
 
     {{-- Chart Card --}}
-    <div class="row mb-4">
-        <div class="col-lg-7 col-md-7 mb-4 mb-md-0">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h5 class="card-title fw-bold mb-0">
-                            <i class="bi bi-graph-up text-primary me-2"></i>Statistik 30 Hari Terakhir
-                        </h5>
-                        <span class="badge bg-light text-dark px-3 py-2">
-                            <i class="bi bi-calendar-range me-1"></i>30 Hari
-                        </span>
-                    </div>
-                    <div id="chart" wire:ignore></div>
-                </div>
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="card-title fw-bold mb-0">
+                    <i class="bi bi-graph-up text-primary me-2"></i>Statistik 30 Hari Terakhir
+                </h5>
+                <span class="badge bg-light text-dark px-3 py-2">
+                    <i class="bi bi-calendar-range me-1"></i>30 Hari
+                </span>
             </div>
-        </div>
-        <div class="col-lg-5 col-md-5">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                <div class="card-body p-4 d-flex flex-column">
-                    <h5 class="card-title fw-bold mb-3">
-                        <i class="bi bi-pie-chart-fill text-primary me-2"></i>Ringkasan Total
-                    </h5>
-                    <div id="pie-chart" wire:ignore class="flex-grow-1 d-flex align-items-center justify-content-center"></div>
-                </div>
-            </div>
+            <div id="chart" wire:ignore></div>
         </div>
     </div>
 
@@ -698,69 +684,6 @@
                     ]);
                 }
             });
-
-            // --- Pie Chart Initialization ---
-            const pieChartEl = document.getElementById('pie-chart');
-            if (pieChartEl) {
-                let initialTotalIncome = @json($totalIncome);
-                let initialTotalExpense = @json($totalExpense);
-
-                const noInitialData = initialTotalIncome === 0 && initialTotalExpense === 0;
-
-                const pieOptions = {
-                    series: noInitialData
-                            ? [100] 
-                            : [initialTotalIncome, initialTotalExpense],
-                    chart: {
-                        type: 'donut',
-                        height: '100%',
-                    },
-                    labels: noInitialData
-                            ? ['Tidak ada data']
-                            : ['Pemasukan', 'Pengeluaran'],
-                    colors: ['#11998e', '#ee0979'],
-                    legend: {
-                        position: 'bottom',
-                        show: !noInitialData
-                    },
-                    plotOptions: {}, // Dikosongkan untuk gaya simple donut
-                    dataLabels: { enabled: false },
-                    responsive: [{
-                        breakpoint: 480,
-                        options: {
-                            chart: {
-                                width: '100%'
-                            },
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }]
-                };
-
-                window.cashflowPieChart = new ApexCharts(pieChartEl, pieOptions);
-                window.cashflowPieChart.render();
-
-                Livewire.on('totals-updated', (event) => {
-                    const payload = event && (event[0] || event) || {};
-                    const income = payload.income || 0;
-                    const expense = payload.expense || 0;
-
-                    if (window.cashflowPieChart) {
-                        const noData = income === 0 && expense === 0;
-                        const newSeries = noData ? [100] : [income, expense];
-                        const newLabels = noData ? ['Tidak ada data'] : ['Pemasukan', 'Pengeluaran'];
-
-                        window.cashflowPieChart.updateOptions({
-                            series: newSeries,
-                            labels: newLabels,
-                            legend: {
-                                show: !noData,
-                            }
-                        });
-                    }
-                });
-            }
 
             // --- SweetAlert2 Listeners ---
             Livewire.on("swal", (event) => {
