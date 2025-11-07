@@ -741,10 +741,6 @@
                             labels: newLabels,
                             legend: {
                                 show: !noData,
-                            },
-                            // Pastikan plotOptions juga di-reset saat update
-                            plotOptions: {
-                                pie: { donut: { labels: { total: { show: !noData } } } }
                             }
                         });
                     }
