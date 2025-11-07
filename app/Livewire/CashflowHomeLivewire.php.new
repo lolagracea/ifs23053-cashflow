@@ -1,0 +1,175 @@
+<?php
+
+namespace App\Livewire;
+
+use Livewire\Component;
+use Livewire\WithPagination;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Cashflow;
+
+class CashflowHomeLivewire extends Component
+{
+    use WithPagination, WithFileUploads;
+
+    public $auth;
+    public $search = '';
+    public $showModal = false;
+
+    // form fields
+    public $title;
+    public $type = 'expense';
+    public $amount;
+    public $description;
+    public $receipt;
+    public $editingId = null;
+    public $currentReceipt = null;
+
+    protected $listeners = ['confirmDelete'];
+
+    public function mount()
+    {
+        $this->auth = Auth::user();
+    }
+
+    public function render()
+    {
+        $cashflows = Cashflow::where('user_id', $this->auth->id)
+            ->where('title', 'like', '%'.$this->search.'%')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $totalIncome = Cashflow::where('user_id', $this->auth->id)
+            ->where('type', 'income')->sum('amount');
+        $totalExpense = Cashflow::where('user_id', $this->auth->id)
+            ->where('type', 'expense')->sum('amount');
+
+        return view('livewire.cashflow-home-livewire', [
+            'cashflows' => $cashflows,
+            'totalIncome' => $totalIncome,
+            'totalExpense' => $totalExpense,
+        ]);
+    }
+
+    public function openModal()
+    {
+        $this->showModal = true;
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->resetForm();
+    }
+
+    public function save()
+    {
+        $this->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:income,expense',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+            'receipt' => $this->editingId ? 'nullable|image|max:2048' : 'required|image|max:2048',
+        ]);
+
+        if ($this->editingId) {
+            $this->update();
+        } else {
+            $this->create();
+        }
+
+        $this->dispatchBrowserEvent('swal', ['type' => 'success', 'message' => 'Data berhasil disimpan']);
+        $this->closeModal();
+    }
+
+    private function create()
+    {
+        $path = $this->receipt->store('receipts', 'public');
+
+        Cashflow::create([
+            'user_id' => $this->auth->id,
+            'title' => $this->title,
+            'type' => $this->type,
+            'amount' => $this->amount,
+            'description' => $this->description,
+            'receipt' => $path,
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $cashflow = Cashflow::find($id);
+        if (!$cashflow || $cashflow->user_id != $this->auth->id) {
+            $this->dispatchBrowserEvent('swal', ['type' => 'error', 'message' => 'Data tidak ditemukan']);
+            return;
+        }
+
+        $this->editingId = $id;
+        $this->title = $cashflow->title;
+        $this->type = $cashflow->type;
+        $this->amount = $cashflow->amount;
+        $this->description = $cashflow->description;
+        $this->currentReceipt = $cashflow->receipt;
+
+        $this->openModal();
+    }
+
+    private function update()
+    {
+        $cashflow = Cashflow::find($this->editingId);
+        if (!$cashflow || $cashflow->user_id != $this->auth->id) {
+            $this->dispatchBrowserEvent('swal', ['type' => 'error', 'message' => 'Data tidak ditemukan']);
+            return;
+        }
+
+        $data = [
+            'title' => $this->title,
+            'type' => $this->type,
+            'amount' => $this->amount,
+            'description' => $this->description,
+        ];
+
+        if ($this->receipt) {
+            if ($cashflow->receipt) {
+                Storage::disk('public')->delete($cashflow->receipt);
+            }
+            $data['receipt'] = $this->receipt->store('receipts', 'public');
+        }
+
+        $cashflow->update($data);
+    }
+
+    public function confirmDelete($id)
+    {
+        $this->dispatchBrowserEvent('swal:confirm', [
+            'type' => 'warning',
+            'message' => 'Yakin hapus data?',
+            'text' => 'Data yang dihapus tidak dapat dikembalikan',
+            'id' => $id,
+        ]);
+    }
+
+    public function deleteCashflow($id)
+    {
+        $cashflow = Cashflow::find($id);
+        if ($cashflow && $cashflow->user_id == $this->auth->id) {
+            if ($cashflow->receipt) {
+                Storage::disk('public')->delete($cashflow->receipt);
+            }
+            $cashflow->delete();
+            $this->dispatchBrowserEvent('swal', ['type' => 'success', 'message' => 'Data berhasil dihapus']);
+        }
+    }
+
+    private function resetForm()
+    {
+        $this->editingId = null;
+        $this->title = '';
+        $this->type = 'expense';
+        $this->amount = '';
+        $this->description = '';
+        $this->receipt = null;
+        $this->currentReceipt = null;
+    }
+}
