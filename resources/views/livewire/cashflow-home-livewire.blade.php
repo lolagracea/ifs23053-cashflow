@@ -699,31 +699,10 @@
                     labels: ['Pemasukan', 'Pengeluaran'],
                     colors: ['#11998e', '#ee0979'],
                     legend: {
-                        position: 'bottom',
-                        fontFamily: 'Poppins, sans-serif',
+                        position: 'bottom'
                     },
                     dataLabels: {
-                        enabled: true,
-                        formatter: function (val, opts) {
-                            return opts.w.config.series[opts.seriesIndex].toLocaleString('id-ID')
-                        },
-                    },
-                    plotOptions: {
-                        pie: {
-                            donut: {
-                                labels: {
-                                    show: true,
-                                    total: {
-                                        show: true,
-                                        label: 'Total Transaksi',
-                                        formatter: function (w) {
-                                            const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                                            return 'Rp ' + total.toLocaleString('id-ID');
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        enabled: false // Menonaktifkan label pada irisan donut
                     },
                     responsive: [{
                         breakpoint: 480,

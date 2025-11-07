@@ -60,6 +60,9 @@ class CashflowHomeLivewire extends Component
 
         $this->prepareChartData();
 
+        // Kirim data total ke frontend untuk chart lingkaran
+        $this->dispatch('totals-updated', ['income' => $totalIncome, 'expense' => $totalExpense]);
+
         return view('livewire.cashflow-home-livewire', [
             'cashflows' => $cashflows,
             'totalIncome' => $totalIncome,
