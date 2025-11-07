@@ -165,9 +165,7 @@
                             <th class="fw-semibold">Judul</th>
                             <th class="fw-semibold">Jenis</th>
                             <th class="fw-semibold">Nominal</th>
-                            <th class="fw-semibold">Tanggal</th>
-                            <th class="fw-semibold">Bukti</th>
-                            <th class="fw-semibold">Aksi</th>
+                            <th class="fw-semibold text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -187,21 +185,8 @@
                                 @endif
                             </td>
                             <td class="fw-semibold">Rp {{ number_format($item->amount, 0, ',', '.') }}</td>
-                            <td class="text-muted">{{ $item->created_at->format('d M Y') }}</td>
-                            <td>
-                                @if($item->receipt)
-                                    <a href="{{ Storage::url($item->receipt) }}" target="_blank">
-                                        <img src="{{ Storage::url($item->receipt) }}" 
-                                             alt="Receipt" 
-                                             class="rounded shadow-sm"
-                                             style="height: 50px; width: 50px; object-fit: cover;">
-                                    </a>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
+                            <td class="text-center">
+                                <div class="btn-group shadow-sm" role="group">
                                     <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" wire:click="edit({{ $item->id }})">
                                         <i class="bi bi-pencil-square"></i>
                                         <span>Ubah</span>
