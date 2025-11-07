@@ -708,33 +708,7 @@
                         position: 'bottom',
                         show: !noInitialData
                     },
-                    plotOptions: {
-                        pie: {
-                            donut: {
-                                size: '65%',
-                                labels: {
-                                    show: true,
-                                    total: noInitialData ? { show: false } : {
-                                        show: true,
-                                        label: 'Total Transaksi',
-                                        fontSize: '16px',
-                                        fontWeight: 600,
-                                        color: '#373d3f',
-                                        formatter: function (w) {
-                                            // Pastikan w.globals.initialSeries ada sebelum di-reduce
-                                            const series = w.globals.initialSeries || w.globals.series;
-                                            if (!series || series.length === 0) return 'Rp 0';
-                                            const total = series.reduce((a, b) => a + b, 0);
-                                            if (total === 0) {
-                                                return 'Rp 0';
-                                            }
-                                            return 'Rp ' + total.toLocaleString('id-ID');
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
+                    plotOptions: {}, // Dikosongkan untuk gaya simple donut
                     dataLabels: { enabled: false },
                     responsive: [{
                         breakpoint: 480,
@@ -761,12 +735,16 @@
                         const noData = income === 0 && expense === 0;
                         const newSeries = noData ? [100] : [income, expense];
                         const newLabels = noData ? ['Tidak ada data'] : ['Pemasukan', 'Pengeluaran'];
-                        
+
                         window.cashflowPieChart.updateOptions({
                             series: newSeries,
                             labels: newLabels,
                             legend: {
                                 show: !noData,
+                            },
+                            // Pastikan plotOptions juga di-reset saat update
+                            plotOptions: {
+                                pie: { donut: { labels: { total: { show: !noData } } } }
                             }
                         });
                     }
