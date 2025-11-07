@@ -95,6 +95,12 @@ class CashflowHomeLivewire extends Component
             return [($timestamp * 1000), (float) $item->total_expense];
         })->values()->toArray();
 
+        // Jika tidak ada data sama sekali, berikan data dummy agar chart tidak error
+        if (empty($incomeData) && empty($expenseData)) {
+            $incomeData[] = [now()->getTimestampMs(), 0];
+            $expenseData[] = [now()->getTimestampMs(), 0];
+        }
+
         $this->chartData['income'] = $incomeData;
         $this->chartData['expense'] = $expenseData;
 

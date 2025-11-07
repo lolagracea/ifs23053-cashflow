@@ -594,6 +594,21 @@
             let initialIncome = @json($chartData['income'] ?? []);
             let initialExpense = @json($chartData['expense'] ?? []);
 
+            // Filter nilai invalid untuk memastikan tidak ada NaN
+            initialIncome = initialIncome.filter(
+                (item) => Array.isArray(item) && !isNaN(item[0]) && !isNaN(item[1])
+            );
+            initialExpense = initialExpense.filter(
+                (item) => Array.isArray(item) && !isNaN(item[0]) && !isNaN(item[1])
+            );
+
+            // Jika setelah filter tidak ada data valid, tambahkan dummy data
+            if (initialIncome.length === 0 && initialExpense.length === 0) {
+                const now = new Date().getTime();
+                initialIncome = [[now, 0]];
+                initialExpense = [[now, 0]];
+            }
+
 
             //  Sebelum render chart baru, hancurkan yang lama
             if (window.cashflowChart) {
