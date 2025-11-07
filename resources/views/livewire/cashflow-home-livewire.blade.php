@@ -214,7 +214,7 @@
     </div>
 
     {{-- Modal Form --}}
-    <div class="modal @if($showModal) show @endif" 
+    <div id="cashflowFormModal" class="modal @if($showModal) show @endif" 
          style="display: @if($showModal) block @else none @endif;"
          tabindex="-1"
          role="dialog">
@@ -256,7 +256,7 @@
                         <div class="mb-3">
                             <label for="description" class="form-label fw-semibold">Deskripsi</label>
                             <div wire:ignore>
-                                <input id="description" type="hidden" name="description" wire:model.defer="description">
+                                <input id="description" type="hidden" name="description">
                                 <trix-editor 
                                     input="description"
                                     class="form-control trix-content"
@@ -306,6 +306,44 @@
     @push('scripts')
     <script>
         document.addEventListener("livewire:initialized", () => {
+            const cashflowFormModalEl = document.getElementById('cashflowFormModal');
+            const trixEditor = document.querySelector("trix-editor");
+
+            // --- Trix Editor Listeners ---
+            if (trixEditor) {
+                // Set Trix content when the modal is fully shown
+                cashflowFormModalEl.addEventListener('shown.bs.modal', () => {
+                    // Ambil deskripsi dari properti Livewire dan set ke editor
+                    const description = @this.get('description');
+                    if (trixEditor.editor) {
+                        trixEditor.editor.loadHTML(description || '');
+                    }
+                });
+
+                // When server asks to reset content (usually after closing modal)
+                Livewire.on('reset-trix', () => {
+                    if (trixEditor.editor) {
+                        trixEditor.editor.loadHTML('');
+                    }
+                });
+
+                // Emit changes from Trix back to Livewire
+                trixEditor.addEventListener('trix-change', (e) => {
+                    @this.set('description', e.target.value, false); // false agar tidak memicu request
+                });
+
+                // Saat modal ditutup, pastikan Trix juga di-reset
+                cashflowFormModalEl.addEventListener('hidden.bs.modal', () => {
+                    if (trixEditor.editor) {
+                        trixEditor.editor.loadHTML('');
+                    }
+                    // Beri tahu Livewire bahwa modal sudah tertutup jika penutupan dilakukan via UI (tombol close/backdrop)
+                    if (@this.get('showModal')) {
+                        @this.call('closeModal');
+                    }
+                });
+            }
+
             // --- ApexCharts Initialization ---
             const chartEl = document.getElementById('chart');
             // 3. Pastikan elemen ada sebelum render
@@ -478,45 +516,6 @@
                     }
                 });
             });
-
-            // --- Trix Editor Listeners ---
-            const trixEditor = document.querySelector("trix-editor");
-
-            if (trixEditor) {
-                // When server asks to reset content
-                Livewire.on('reset-trix', () => {
-                    if (trixEditor.editor) {
-                        trixEditor.editor.loadHTML('');
-                    }
-                });
-
-                // Support Livewire-style events (array/object) as well as browser CustomEvent from dispatchBrowserEvent
-                Livewire.on('set-trix-content', (event) => {
-                    const content = (event && (event.content || (event[0] && event[0].content))) || '';
-                    // Ensure Trix editor is fully initialized before loading content
-                    const ensureTrixReadyAndLoad = () => {
-                        if (trixEditor && trixEditor.editor) {
-                            trixEditor.editor.loadHTML(content);
-                        } else {
-                            // Retry after a short delay if editor is not ready
-                            setTimeout(ensureTrixReadyAndLoad, 50);
-                        }
-                    };
-                    ensureTrixReadyAndLoad();
-                });
-
-                // The `reset-trix` listener already exists and should be fine.
-
-                // Emit changes from Trix back to Livewire
-                trixEditor.addEventListener('trix-change', (e) => {
-                    try {
-                        // @this.set lebih langsung daripada Livewire.emit untuk update properti
-                        @this.set('description', e.target.value);
-                    } catch (err) {
-                        console.error('Error updating Trix content:', err);
-                    }
-                });
-            }
 
         });
     </script>

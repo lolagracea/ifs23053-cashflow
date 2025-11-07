@@ -214,11 +214,6 @@ class CashflowHomeLivewire extends Component
         $this->currentReceipt = $cashflow->receipt;
 
         $this->openModal();
-        
-    // Dispatch a Livewire event to update the Trix editor content after modal is shown
-    // Use $this->dispatch(...) because this Livewire version exposes a dispatch() helper
-    // which the frontend listens for via Livewire.on(...)
-    $this->dispatch('set-trix-content', ['content' => $this->description]);
     }
 
     // Called from JS when Trix editor content changes
