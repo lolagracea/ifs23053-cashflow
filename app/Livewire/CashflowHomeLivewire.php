@@ -69,37 +69,51 @@ class CashflowHomeLivewire extends Component
 
     public function prepareChartData()
     {
+        $thirtyDaysAgo = now()->subDays(30)->startOfDay();
+        $userId = $this->auth->id;
+
+        // 1. Hitung saldo awal sebelum periode 30 hari
+        $initialIncome = Cashflow::where('user_id', $userId)
+            ->where('type', 'income')
+            ->where('created_at', '<', $thirtyDaysAgo)
+            ->sum('amount');
+
+        $initialExpense = Cashflow::where('user_id', $userId)
+            ->where('type', 'expense')
+            ->where('created_at', '<', $thirtyDaysAgo)
+            ->sum('amount');
+
+        // 2. Ambil data transaksi harian selama 30 hari terakhir
         $data = Cashflow::where('user_id', $this->auth->id)
-            ->where('created_at', '>=', now()->subDays(30))
+            ->where('created_at', '>=', $thirtyDaysAgo)
             ->select(
                 DB::raw('DATE(created_at) as date'),
-                // Use single quotes inside SQL literals for PostgreSQL
                 DB::raw('SUM(CASE WHEN type = \'income\' THEN amount ELSE 0 END) as total_income'),
                 DB::raw('SUM(CASE WHEN type = \'expense\' THEN amount ELSE 0 END) as total_expense')
             )
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get();
+        
+        // 3. Proses data untuk membuat nilai akumulatif
+        $cumulativeIncome = (float) $initialIncome;
+        $cumulativeExpense = (float) $initialExpense;
+        $incomeData = [];
+        $expenseData = [];
 
-        // Normalize data to arrays: [timestamp_ms, value]
-        $incomeData = $data->map(function ($item) {
-            $timestamp = strtotime($item->date);
-            return [($timestamp * 1000), (float) $item->total_income];
-        })->values()->toArray();
+        // Tambahkan titik awal data dari saldo sebelum 30 hari
+        $incomeData[] = [$thirtyDaysAgo->getTimestampMs(), $cumulativeIncome];
+        $expenseData[] = [$thirtyDaysAgo->getTimestampMs(), $cumulativeExpense];
 
-        $expenseData = $data->map(function ($item) {
-            $timestamp = strtotime($item->date);
-            return [($timestamp * 1000), (float) $item->total_expense];
-        })->values()->toArray();
-
-        // Jika tidak ada data sama sekali, berikan data dummy agar chart tidak error
-        if (empty($incomeData) && empty($expenseData)) {
-            $incomeData[] = [now()->getTimestampMs(), 0];
-            $expenseData[] = [now()->getTimestampMs(), 0];
+        foreach ($data as $item) {
+            $cumulativeIncome += (float) $item->total_income;
+            $cumulativeExpense += (float) $item->total_expense;
+            $timestamp = strtotime($item->date) * 1000;
+            $incomeData[] = [$timestamp, $cumulativeIncome];
+            $expenseData[] = [$timestamp, $cumulativeExpense];
         }
 
-        $this->chartData['income'] = $incomeData;
-        $this->chartData['expense'] = $expenseData;
+        $this->chartData = ['income' => $incomeData, 'expense' => $expenseData];
 
         $this->dispatch('chart-data', ['income' => $this->chartData['income'], 'expense' => $this->chartData['expense']]);
     }
