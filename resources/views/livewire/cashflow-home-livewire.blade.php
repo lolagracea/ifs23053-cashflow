@@ -272,7 +272,48 @@
                     <i class="bi bi-calendar-range me-1"></i>30 Hari
                 </span>
             </div>
-            <div id="chart" wire:ignore></div>
+            <div
+                wire:ignore
+                x-data="{
+                    init() {
+                        // Ambil data awal yang dirender oleh server
+                        let initialIncome = @json($chartData['income'] ?? []);
+                        let initialExpense = @json($chartData['expense'] ?? []);
+
+                        // Filter nilai invalid untuk memastikan tidak ada NaN
+                        initialIncome = initialIncome.filter(item => Array.isArray(item) && !isNaN(item[0]) && !isNaN(item[1]));
+                        initialExpense = initialExpense.filter(item => Array.isArray(item) && !isNaN(item[0]) && !isNaN(item[1]));
+
+                        // Jika setelah filter tidak ada data valid, tambahkan dummy data
+                        if (initialIncome.length === 0 && initialExpense.length === 0) {
+                            const now = new Date().getTime();
+                            initialIncome = [[now, 0]];
+                            initialExpense = [[now, 0]];
+                        }
+
+                        const options = {
+                            series: [{ name: 'Pemasukan', data: initialIncome }, { name: 'Pengeluaran', data: initialExpense }],
+                            chart: { height: 350, type: 'line', zoom: { enabled: false }, toolbar: { show: true }, foreColor: '#999' },
+                            colors: ['#11998e', '#ee0979'],
+                            stroke: { width: [4, 4], curve: 'straight', dashArray: [0, 5] },
+                            dataLabels: { enabled: false },
+                            markers: { size: 0, hover: { sizeOffset: 6 } },
+                            xaxis: { type: 'datetime', axisBorder: { show: false }, axisTicks: { show: false } },
+                            grid: { borderColor: '#f1f1f1' },
+                            tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: val => 'Rp ' + val.toLocaleString('id-ID') } },
+                            legend: { position: 'top', horizontalAlign: 'left', markers: { width: 12, height: 12, strokeWidth: 0, radius: 12 }, itemMargin: { horizontal: 10, vertical: 0 } }
+                        };
+
+                        if (window.cashflowChart) {
+                            window.cashflowChart.destroy();
+                        }
+
+                        window.cashflowChart = new ApexCharts(this.$el, options);
+                        window.cashflowChart.render();
+                    }
+                }"
+                x-init="init()"
+            ></div>
         </div>
     </div>
 
@@ -523,153 +564,21 @@
             // --- Trix Editor Listeners ---
             if (trixEditor) {
                 // Set Trix content when the modal is fully shown
-                cashflowFormModalEl.addEventListener('shown.bs.modal', () => {
-                    // Ambil deskripsi dari properti Livewire dan set ke editor
-                    const description = @this.get('description');
-                    if (trixEditor.editor) {
-                        trixEditor.editor.loadHTML(description || '');
-                    }
-                });
+                cashflowFormModalEl.addEventListener('shown.bs.modal', () => trixEditor.editor && trixEditor.editor.loadHTML(@this.get('description') || ''));
 
                 // When server asks to reset content (usually after closing modal)
-                Livewire.on('reset-trix', () => {
-                    if (trixEditor.editor) {
-                        trixEditor.editor.loadHTML('');
-                    }
-                });
+                Livewire.on('reset-trix', () => trixEditor.editor && trixEditor.editor.loadHTML(''));
 
                 // Emit changes from Trix back to Livewire
-                trixEditor.addEventListener('trix-change', (e) => {
-                    @this.set('description', e.target.value, false); // false agar tidak memicu request
-                });
+                trixEditor.addEventListener('trix-change', e => @this.set('description', e.target.value, false));
 
                 // Saat modal ditutup, pastikan Trix juga di-reset
                 cashflowFormModalEl.addEventListener('hidden.bs.modal', () => {
-                    if (trixEditor.editor) {
-                        trixEditor.editor.loadHTML('');
-                    }
+                    if (trixEditor.editor) trixEditor.editor.loadHTML('');
                     // Beri tahu Livewire bahwa modal sudah tertutup jika penutupan dilakukan via UI (tombol close/backdrop)
-                    if (@this.get('showModal')) {
-                        @this.call('closeModal');
-                    }
+                    if (@this.get('showModal')) @this.call('closeModal');
                 });
             }
-
-            // --- ApexCharts Initialization ---
-            const chartEl = document.getElementById('chart');
-            // 3. Pastikan elemen ada sebelum render
-            if (!chartEl) return; 
-
-            // Function to generate demo data
-            function generateDemoData() {
-                const now = new Date();
-                const income = [];
-                const expense = [];
-                for (let i = 30; i >= 0; i--) {
-                    const date = new Date(now);
-                    date.setDate(date.getDate() - i);
-                    const incomeVal = Math.floor(Math.random() * (70000 - 30000) + 30000);
-                    const expenseVal = Math.floor(Math.random() * (60000 - 20000) + 20000);
-                    income.push([date.getTime(), incomeVal]);
-                    expense.push([date.getTime(), expenseVal]);
-                }
-                return { income, expense };
-            }
-
-            // Ambil data awal yang dirender oleh server
-            let initialIncome = @json($chartData['income'] ?? []);
-            let initialExpense = @json($chartData['expense'] ?? []);
-
-            // Filter nilai invalid untuk memastikan tidak ada NaN
-            initialIncome = initialIncome.filter(
-                (item) => Array.isArray(item) && !isNaN(item[0]) && !isNaN(item[1])
-            );
-            initialExpense = initialExpense.filter(
-                (item) => Array.isArray(item) && !isNaN(item[0]) && !isNaN(item[1])
-            );
-
-            // Jika setelah filter tidak ada data valid, tambahkan dummy data
-            if (initialIncome.length === 0 && initialExpense.length === 0) {
-                const now = new Date().getTime();
-                initialIncome = [[now, 0]];
-                initialExpense = [[now, 0]];
-            }
-
-
-            //  Sebelum render chart baru, hancurkan yang lama
-            if (window.cashflowChart) {
-                window.cashflowChart.destroy();
-                window.cashflowChart = null;
-            }
-
-            const options = {
-                series: [{
-                    name: 'Pemasukan',
-                    data: initialIncome
-                }, {
-                    name: 'Pengeluaran',
-                    data: initialExpense
-                }],
-                chart: {
-                    height: 350,
-                    type: 'line',
-                    zoom: {
-                        enabled: false
-                    },
-                    toolbar: { show: true },
-                    foreColor: "#999"
-                },
-                colors: ['#11998e', '#ee0979'], // Warna disesuaikan dengan kartu statistik
-                stroke: {
-                    width: [4, 4], // Lebar garis untuk Pemasukan dan Pengeluaran
-                    curve: 'straight',
-                    dashArray: [0, 5] // 0 untuk garis solid (Pemasukan), 5 untuk garis putus-putus (Pengeluaran)
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                markers: {
-                    size: 0,
-                    hover: {
-                        sizeOffset: 6
-                    }
-                },
-                xaxis: {
-                    type: 'datetime',
-                    axisBorder: { show: false },
-                    axisTicks: { show: false }
-                },
-                grid: {
-                    borderColor: '#f1f1f1',
-                },
-                tooltip: {
-                    x: { format: 'dd MMM yyyy' },
-                    y: {
-                        formatter: function(val) {
-                            return "Rp "
-
-                            + val.toLocaleString('id-ID');
-                        },
-                    }
-                },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'left',
-                    markers: {
-                        width: 12,
-                        height: 12,
-                        strokeWidth: 0,
-                        radius: 12,
-                    },
-                    itemMargin: {
-                        horizontal: 10,
-                        vertical: 0
-                    },
-                }
-            };
-
-            window.cashflowChart = new ApexCharts(chartEl, options);
-            window.cashflowChart.render();
 
             // Listen for server-side dispatched chart data and update chart
             Livewire.on('chart-data', (event) => {
